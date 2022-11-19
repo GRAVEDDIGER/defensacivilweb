@@ -34,8 +34,11 @@ export const handleSaveBuilder = (
   setImagePath,
   imagePath,
   value,
-  formData
+  formData,
+  id
 ) => {
+  // ACA NECESITO GENERAR UN CAMPO CON KEY = ID DEL DOCUMENTO Y VALUE TRUE O FALSE
+  // SI EL VALOR ES TRUE ENTONCES EL DOCUMENTO SE RENDERIZA
   let paths = [];
   imagenes.forEach((imagen) => {
     const directory = tabs.filter((tab) => tab.id === value);
@@ -46,6 +49,7 @@ export const handleSaveBuilder = (
   });
 
   setImagePath(paths);
+  console.log("esto", imagePath);
   const pageColectionTab = tabs.filter((tab) => tab.id === value);
   const objetoDb = {
     title: formData.title,

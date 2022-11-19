@@ -44,13 +44,25 @@ const ImageContainer = styled.img`
   padding: 0.5rem;
 `;
 function BuilderNewPost({ value, tabs }) {
-  const [formData, handleChange] = useForm(initialForm);
+  const [formData, handleChange, setFormData] = useForm(initialForm);
   const [imagenes, setImagenes] = useState([]);
   const [imagePath, setImagePath] = useState([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const handleSave = () =>
-    handleSaveBuilder(imagenes, tabs, setImagePath, imagePath, value, formData);
+  const handleSave = () => {
+    handleSaveBuilder(
+      imagenes,
+      tabs,
+      setImagePath,
+      imagePath,
+      value,
+      formData,
+      uuid()
+    );
+    setFormData(initialForm);
+    setImagenes([]);
+  };
+
   const handleClick = (e) => {
     const pickerOptions = {
       types: [
