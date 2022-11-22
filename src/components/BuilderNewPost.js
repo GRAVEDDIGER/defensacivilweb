@@ -46,19 +46,11 @@ const ImageContainer = styled.img`
 function BuilderNewPost({ value, tabs }) {
   const [formData, handleChange, setFormData] = useForm(initialForm);
   const [imagenes, setImagenes] = useState([]);
-  const [imagePath, setImagePath] = useState([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const handleSave = () => {
-    handleSaveBuilder(
-      imagenes,
-      tabs,
-      setImagePath,
-      imagePath,
-      value,
-      formData,
-      uuid()
-    );
+  const handleSave = async () => {
+    console.log("TEXTO", formData);
+    handleSaveBuilder(imagenes, tabs, value, formData, uuid());
     setFormData(initialForm);
     setImagenes([]);
   };
@@ -111,12 +103,7 @@ function BuilderNewPost({ value, tabs }) {
             style={{ resize: "none", width: "100%" }}
           />
         </Grid>
-        <Grid
-          xs={8}
-          md={4}
-          lg={3}
-          sx={{ textAlign: "center", justifyContent: "center" }}
-        >
+        <Grid sx={{ textAlign: "center", justifyContent: "center" }}>
           <Button
             variant="contained"
             onClick={handleClick}

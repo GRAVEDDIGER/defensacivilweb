@@ -5,9 +5,11 @@ import {
   collection,
   addDoc,
   serverTimestamp,
+  setDoc,
+  doc,
 } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
-
+import uuid from "react-uuid";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -28,11 +30,9 @@ export const pagesCollection = collection(db, "pages");
 export const storage = getStorage();
 export const rootRef = ref(storage);
 
-export const handleSaveBuilder = (
+export const handleSaveBuilder = async (
   imagenes,
   tabs,
-  setImagePath,
-  imagePath,
   value,
   formData,
   id
@@ -40,23 +40,41 @@ export const handleSaveBuilder = (
   // ACA NECESITO GENERAR UN CAMPO CON KEY = ID DEL DOCUMENTO Y VALUE TRUE O FALSE
   // SI EL VALOR ES TRUE ENTONCES EL DOCUMENTO SE RENDERIZA
   let paths = [];
-  imagenes.forEach((imagen) => {
-    const directory = tabs.filter((tab) => tab.id === value);
-    const pathName = `${directory[0].label.toString()}/${imagen.name}`;
-    const uploadRef = ref(rootRef, pathName);
-    getDownloadURL(ref(rootRef, pathName)).then((res) => paths.push(res));
-    uploadBytes(uploadRef, imagen);
-  });
 
-  setImagePath(paths);
-  console.log("esto", imagePath);
-  const pageColectionTab = tabs.filter((tab) => tab.id === value);
-  const objetoDb = {
-    title: formData.title,
-    description: formData.description,
-    timeStamp: serverTimestamp(),
-    images: imagePath,
-  };
-  console.log(objetoDb);
-  addDoc(collection(db, pageColectionTab[0].label), objetoDb);
+  let objetoDb;
+  imagenes.forEach(async (imagen, index) => {
+    const directory = tabs.filter((tab) => tab.id === value);
+    console.log(tabs, id, value, directory);
+    const pathName = `${directory[0].label.toString()}/${
+      imagen.name
+    } ${uuid()}`;
+    const uploadRef = ref(rootRef, pathName);
+    const uploadResponse = await uploadBytes(uploadRef, imagen);
+    console.log(uploadResponse, "Upload");
+    const getDownloadURLResponse = await getDownloadURL(uploadResponse.ref);
+    console.log(getDownloadURLResponse, "download");
+    paths.push(getDownloadURLResponse);
+    console.log(
+      "Indice",
+      index,
+      " Largo ",
+      imagenes.length - 1,
+      "imagenes",
+      paths
+    );
+    if (index === imagenes.length - 1) {
+      console.log("adentro", paths);
+      const pageColectionTab = tabs.filter((tab) => tab.id === value);
+      objetoDb = {
+        ...formData,
+        id: id,
+        render: true,
+        images: paths,
+        timeStamp: serverTimestamp(),
+      };
+      console.log("Database Object", objetoDb);
+      const docRef = doc(db, pageColectionTab[0].label, id);
+      setDoc(docRef, objetoDb);
+    }
+  });
 };

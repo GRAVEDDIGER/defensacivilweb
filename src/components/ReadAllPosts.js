@@ -10,29 +10,19 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { db, pagesCollection } from "../functions/firebase";
-import { onSnapshot, collection, query } from "firebase/firestore";
+import { onSnapshot, collection, query, getDocs } from "firebase/firestore";
 import styled from "styled-components";
+import PostItem from "./PostItem";
 
-const ImageContainer = styled.img`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 1rem;
-`;
 const initialRender = { id: "", value: true };
 
 function ReadAllPosts({ activeTab }) {
   const [posts, setPosts] = useState([]);
   const [render, setRender] = useState({});
-  const onChangeSwitch = (id, value) => {
-    const objeto = { [id]: value };
-    setRender({ ...render, objeto });
-  };
   useEffect(() => {
     const q = query(collection(db, activeTab));
-    const array = [];
     onSnapshot(q, (docs) => {
+      const array = [];
       docs.forEach((doc) => {
         const objeto = { ...doc.data(), id: doc.id };
         array.push(objeto);
@@ -40,7 +30,6 @@ function ReadAllPosts({ activeTab }) {
       setPosts(array);
     });
   }, []);
-  console.log("tipò", typeof posts, "Contenido", posts);
 
   return (
     <Paper>
@@ -52,61 +41,18 @@ function ReadAllPosts({ activeTab }) {
         POST GUARDADOS{" "}
       </Typography>
       {posts.length > 0
-        ? posts.map((doc) => {
+        ? posts.map((doc, index) => {
+            console.log(doc);
             return (
-              <Card
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  padding: "1rem",
-                  backgroundColor: "#d9d9d9",
-                  margin: "1rem",
-                }}
-                raised
-              >
-                <Stack direction="row" spacing={4}>
-                  {doc.images.map((image) => {
-                    return (
-                      <ImageContainer
-                        src={image}
-                        alt={doc.title}
-                        style={{ width: "200px" }}
-                      />
-                    );
-                  })}
-                </Stack>
-                <Stack direction="column" sx={{ margin: "0.5rem" }}>
-                  <Typography
-                    variant="h4"
-                    component="h4"
-                    sx={{ fontWeigth: "bold" }}
-                  >
-                    {doc.title}
-                  </Typography>
-                  <Typography>{doc.description}</Typography>
-                  <Stack direction="column" sx={{ alignContent: "center" }}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          defaultChecked
-                          id={doc.id}
-                          value={render.value}
-                        />
-                      }
-                      label="Renderizar"
-                      sx={{ justifyContent: "center" }}
-                    />
-                  </Stack>
-                </Stack>
-              </Card>
+              <PostItem
+                posts={posts}
+                setPosts={setPosts}
+                doc={doc}
+                index={index}
+              />
             );
           })
-        : null}
-      <Stack direction="row" sx={{ justifyContent: "center" }}>
-        <Button variant="contained" sx={{ margin: "1rem" }}>
-          Update
-        </Button>
-      </Stack>
+        : null}{" "}
     </Paper>
   );
 }
